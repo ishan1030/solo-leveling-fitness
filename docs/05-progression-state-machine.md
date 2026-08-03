@@ -237,7 +237,7 @@ She taps **STOP — I'M INJURED** mid-session and logs the injury.
 
 | Effect | Value |
 |---|---|
-| Session | Logged, scores zero, **no penalty** |
+| Session | Logged. **Every set she completed before stopping scores normally.** |
 | Streak | Paused at its current value, indefinitely |
 | Decay | **Suspended entirely** |
 | Quests | Suppressed — no prompting at all |

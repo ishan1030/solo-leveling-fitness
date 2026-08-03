@@ -11,6 +11,7 @@ import {
   TickingNumber,
 } from '../design/components';
 import { palette, space, surface, type } from '../design/tokens';
+import { METRIC_LABELS, formatRecord } from '../engine/records';
 import { detectImplausible } from '../engine/scoring';
 import { EXERCISES, getExercise, scoringProfileFor, searchExercises } from '../data/exercises';
 import type { Exercise } from '../data/exercises';
@@ -341,14 +342,31 @@ export function SessionSummaryScreen({ onDone }: { onDone: () => void }) {
   }
 
   const withheldEntries = Object.entries(summary.withheld).filter(([, v]) => v > 0);
+  const aborted = summary.score.scoredAsAborted;
 
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[type.label, { color: palette.muted }]}>SESSION COMPLETE</Text>
+        <Text style={[type.label, { color: palette.muted }]}>
+          {aborted ? 'SESSION STOPPED' : 'SESSION COMPLETE'}
+        </Text>
         <Text style={[type.display, { color: palette.ink }]}>
           {summary.score.sets.length} sets logged
         </Text>
+
+        {/*
+          §15 / §21: an aborted session leads with recovery, but the numbers
+          below are the real ones. Every set completed before stopping counts.
+        */}
+        {aborted && (
+          <View style={{ marginTop: space.sm }}>
+            <Notice tone="info">
+              Streak paused and nothing will decay while you recover. Everything
+              you finished before stopping still counts — it is scored below,
+              exactly as it would have been.
+            </Notice>
+          </View>
+        )}
 
         <View style={{ height: space.lg }} />
         <Panel>
@@ -395,6 +413,57 @@ export function SessionSummaryScreen({ onDone }: { onDone: () => void }) {
               {`Level ${summary.levelsGained[summary.levelsGained.length - 1]}.`}
             </Notice>
           </View>
+        )}
+
+        {/* §7: PRs hit, per movement. */}
+        {summary.records.length > 0 && (
+          <>
+            <View style={{ height: space.lg }} />
+            <SectionLabel>
+              {summary.celebratedRecords.length > 0 ? 'Personal records' : 'First recorded'}
+            </SectionLabel>
+            <Panel accent={summary.celebratedRecords.length > 0 ? palette.alert : undefined}>
+              {summary.records.map((detected, index) => {
+                const exercise = getExercise(detected.record.exerciseId);
+                return (
+                  <View
+                    key={`${detected.record.exerciseId}_${detected.record.metric}`}
+                    style={index > 0 ? { marginTop: space.sm } : undefined}
+                    accessible
+                    accessibilityLabel={`${exercise?.name ?? detected.record.exerciseId}, ${
+                      METRIC_LABELS[detected.record.metric]
+                    }: ${formatRecord(detected.record)}${
+                      detected.isFirst
+                        ? ', first recorded'
+                        : `, up from ${detected.previous!.value} ${detected.previous!.unit}`
+                    }`}
+                  >
+                    <Text style={[type.body, { color: palette.ink }]}>
+                      {exercise?.name ?? detected.record.exerciseId}
+                    </Text>
+                    <View style={styles.summaryRow}>
+                      <Text style={[type.small, { color: palette.muted }]}>
+                        {METRIC_LABELS[detected.record.metric]}
+                      </Text>
+                      <Text
+                        style={[
+                          type.data,
+                          { color: detected.isFirst ? palette.ink : palette.alert },
+                        ]}
+                      >
+                        {formatRecord(detected.record)}
+                      </Text>
+                    </View>
+                    {!detected.isFirst && detected.previous && (
+                      <Text style={[type.dataSmall, { color: palette.muted }]}>
+                        WAS {detected.previous.value} {detected.previous.unit}
+                      </Text>
+                    )}
+                  </View>
+                );
+              })}
+            </Panel>
+          </>
         )}
 
         <View style={{ height: space.xl }} />

@@ -10,7 +10,7 @@ are implemented against the same engine, which is complete for all of them.
 |---|---|---|
 | A · First run | 13 | 13 |
 | B · Daily loop | 5 | 5 |
-| C · Progression | 4 | 5 |
+| C · Progression | 5 | 5 |
 | D · Social | 6 | 11 |
 | E · Territory | 2 | 4 |
 | F · Ladder | 2 | 3 |
@@ -18,7 +18,7 @@ are implemented against the same engine, which is complete for all of them.
 | H · Coach | 0 | 4 |
 | I · Commerce | 2 | 4 |
 | J · Safety | 4 | 6 |
-| **Total** | **41** | **59** |
+| **Total** | **42** | **59** |
 
 Plus all five §19 moment screens.
 
@@ -30,7 +30,6 @@ complete and tested — what is missing is the screen, not the logic.
 | D1–D2 Friends, add friend | — | Friend graph is server-side; no client engine to build against |
 | D5–D6 Guilds | Partially — contribution cap specified, not implemented | Guild entity is server-owned |
 | D11 Boss raid | `raids.ts`, `isBossRaid` | Global completion counter needs a backend |
-| C4 PR history graph | `scoring.ts` tracks PRs | Charting; no blocker |
 | E2, E4 City board, venue profile | `ladder.ts` `buildVenueStandings` | No blocker |
 | F3 Trial leaderboard | `quests.ts` `trialForWeek` | No blocker |
 | G4 Titles | `seasons.ts` `seasonRewardsFor` | No blocker |
@@ -152,7 +151,7 @@ and equipment.
 | Weekly cap hit | States exactly what was withheld and why |
 | Flagged sets | States the count, confirms they remain in the log |
 | Level gained | Level-up notice |
-| Aborted for injury | "Nothing scored, and nothing lost." No stats shown. |
+| Aborted for injury | Leads with recovery; the sets completed before stopping are scored and shown |
 
 ### B5 · CHECK-IN (QR) **BUILT**
 *`src/screens/CheckIn.tsx`*
@@ -193,8 +192,19 @@ titles, and the §17 career timeline.
 The published §6 lookup tables. Same data the scorer uses — there is no second,
 hidden set of numbers.
 
-### C4 · PR HISTORY
-Per-movement progression graph. Numbers monospace, large.
+### C4 · PR HISTORY **BUILT**
+*`src/screens/Records.tsx`*
+
+Per-movement progression graph. Records are per (movement, metric) — a heavier
+single and a higher-volume set are different achievements and both are kept.
+
+| State | Behaviour |
+|---|---|
+| No records | "Your first logged set of any movement becomes its baseline." |
+| All records | Most recent first, tappable through to the movement |
+| Movement detail | One tab per metric held; monotone best-so-far line |
+| Single data point | "The line appears once you beat it." |
+| Pace metric | Graph flips so improvement still reads up and to the right |
 
 ### C5 · CAREER TIMELINE **BUILT** (in Profile)
 §17 archive: one permanent entry per season. Append-only.

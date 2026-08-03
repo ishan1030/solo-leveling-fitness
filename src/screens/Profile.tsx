@@ -34,9 +34,11 @@ import { useWorld } from '../state/world';
 export function ProfileScreen({
   onShowRankCard,
   onCheckIn,
+  onShowRecords,
 }: {
   onShowRankCard: () => void;
   onCheckIn: () => void;
+  onShowRecords: () => void;
 }) {
   const profile = useApp((s) => s.profile);
   const standing = useApp((s) => s.standing());
@@ -262,6 +264,8 @@ export function ProfileScreen({
 
         <View style={{ height: space.lg }} />
         <Button label="Rank card" onPress={onShowRankCard} />
+        <View style={{ height: space.xs }} />
+        <Button label="Personal records" variant="secondary" onPress={onShowRecords} />
         <View style={{ height: space.xs }} />
         <Button
           label={`Recalibrate (every ${RECALIBRATION_INTERVAL_DAYS} days)`}

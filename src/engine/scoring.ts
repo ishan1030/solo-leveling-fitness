@@ -301,9 +301,19 @@ const EMPTY_PILLARS: PillarScores = {
 };
 
 /**
- * §16 / §21: a session ended via STOP / I'M INJURED is logged with no penalty.
- * It does not score, but it also does not break a streak and does not count as
- * an idle day for decay. The operator keeps the record of having shown up.
+ * §15 / §21: a session ended via STOP / I'M INJURED is logged with no penalty.
+ *
+ * "No penalty" is read strictly here: every set the operator **completed before
+ * stopping** scores exactly as it would have in any other session. Zeroing them
+ * would mean losing credit for five hard sets because the sixth hurt, which is a
+ * penalty for getting injured — precisely what §21 forbids.
+ *
+ * What the abort actually does is protect the operator downstream: the streak
+ * pauses, decay does not start, and all challenge prompts are suppressed. Those
+ * are handled by the store and the quest engine, not here.
+ *
+ * `scoredAsAborted` is still reported so the summary screen can lead with
+ * recovery rather than with numbers.
  */
 export function scoreSession(
   session: LoggedSession,
@@ -350,24 +360,13 @@ export function scoreSession(
     scored.push({ set, workUnits, pillarPoints, findings: [], excluded: false });
   }
 
-  if (session.abortedForInjury) {
-    return {
-      sets: scored,
-      proposedPillarPoints: { ...EMPTY_PILLARS },
-      totalWorkUnits,
-      xp: 0,
-      flaggedSetCount,
-      scoredAsAborted: true,
-    };
-  }
-
   return {
     sets: scored,
     proposedPillarPoints: proposed,
     totalWorkUnits,
     xp: xpForWork(totalWorkUnits),
     flaggedSetCount,
-    scoredAsAborted: false,
+    scoredAsAborted: session.abortedForInjury === true,
   };
 }
 

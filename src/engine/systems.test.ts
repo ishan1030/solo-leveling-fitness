@@ -258,15 +258,38 @@ describe('§7 — impossible numbers', () => {
 });
 
 describe('§15 / §21 — aborted-for-injury session', () => {
-  it('scores nothing but is not a penalty', () => {
+  const completedSets = [
+    { exerciseId: 'back_squat', kind: 'reps_load' as const, reps: 5, loadKg: 100 },
+    { exerciseId: 'back_squat', kind: 'reps_load' as const, reps: 5, loadKg: 100 },
+  ];
+
+  it('is flagged as aborted so the summary can lead with recovery', () => {
     const result = scoreSession(
-      session([{ exerciseId: 'back_squat', kind: 'reps_load', reps: 5, loadKg: 100 }], {
-        abortedForInjury: true,
-      }),
+      session(completedSets, { abortedForInjury: true }),
       lookup,
       75,
     );
     expect(result.scoredAsAborted).toBe(true);
+  });
+
+  it('still credits every set completed before stopping — §21 forbids penalising injury', () => {
+    const aborted = scoreSession(
+      session(completedSets, { abortedForInjury: true }),
+      lookup,
+      75,
+    );
+    const normal = scoreSession(session(completedSets), lookup, 75);
+
+    // Losing credit for work already done because the next set hurt would be a
+    // penalty for getting injured.
+    expect(aborted.proposedPillarPoints).toEqual(normal.proposedPillarPoints);
+    expect(aborted.xp).toBe(normal.xp);
+    expect(aborted.totalWorkUnits).toBe(normal.totalWorkUnits);
+    expect(aborted.xp).toBeGreaterThan(0);
+  });
+
+  it('scores nothing when the operator stopped before completing any set', () => {
+    const result = scoreSession(session([], { abortedForInjury: true }), lookup, 75);
     expect(result.xp).toBe(0);
     expect(result.proposedPillarPoints).toEqual({
       strength: 0,

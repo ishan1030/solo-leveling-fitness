@@ -24,7 +24,7 @@ dimensionless *work units* before any pillar point is awarded.
 | Bodyweight movements scored against the operator's actual mass | `reps_load`→`reps_bodyweight` branch |
 | Distance scored with a pace factor, so a 5 km at 4:30/km beats 7:00/km | `distance` branch |
 | Diminishing returns via √volume, so junk reps cannot out-score hard ones | all branches |
-| A completed-but-aborted session scores exactly zero | `scoreSession`, `abortedForInjury` |
+| An empty session scores exactly zero | `scoreSession` |
 
 **Proof:** `src/engine/systems.test.ts` → `§2 FAILURE 1 — progression is driven
 by performance, not completion`

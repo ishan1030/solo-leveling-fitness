@@ -98,7 +98,7 @@ boards above COBALT show verified operators only.
 | `sets` | `LoggedSet[]` | Denormalised; a session is written once |
 | `verification` | `VerificationTier` | Per-session, not per-profile |
 | `venueId` | string \| null | |
-| `abortedForInjury` | boolean | §15; scores zero, penalises nothing |
+| `abortedForInjury` | boolean | §15; completed sets still score, streak and decay pause |
 
 **Server-only:** `checkInAt`, `checkOutAt`, `syncedAt`, `clientGeneratedId`
 (idempotency key for offline replay), `reviewStatus`.

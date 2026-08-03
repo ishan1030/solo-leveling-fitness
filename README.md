@@ -21,7 +21,7 @@ pass. Built to the master specification in
 
 ```bash
 npm install
-npm test          # 317 tests
+npm test          # 356 tests
 npm run typecheck
 npm start         # Expo
 ```
@@ -35,10 +35,10 @@ Hermes bundle.
 
 A complete v1.0 build: the progression engine, calibration, logging, quests,
 raids, rivals, verification, ladders, territory, seasons, entitlements, a design
-system, **41 of the 59 specified screens plus all five moment screens**, and the
+system, **42 of the 59 specified screens plus all five moment screens**, and the
 full specification.
 
-The 18 unbuilt screens are listed in
+The 17 unbuilt screens are listed in
 [the screen inventory](docs/03-screen-inventory.md#build-status) with what each
 is blocked on. Their engines are complete and tested — what is missing is the
 screen, not the logic.
@@ -68,12 +68,14 @@ src/
 │   ├── seasons.ts       13-week cycle, partial reset, pass, archive
 │   ├── streaks.ts       Rest days, freezes, injury pauses
 │   ├── ladder.ts        Board construction, §10 filtering, §12 territory
+│   ├── records.ts       PR detection per movement and metric, history series
 │   └── entitlements.ts  The §18 fairness rule, enforced by the type system
 ├── data/            Exercise library (302), AXIOM copy bank, rule tests
 ├── design/          Tokens and components
 ├── nav/             Tab bar
 ├── screens/         Calibration · reveal · home · session · check-in · ladder
-│                    social · profile · season · rank card · moments · safety
+│                    social · profile · season · rank card · records ·
+│                    moments · safety
 └── state/           store.ts   operator state, persisted, offline-first
                      world.ts   server-cached ladder/venues/raids, not persisted
 ```
@@ -136,6 +138,9 @@ interface LapseOutcome {
 | A filtered operator never occupies a leaderboard rank slot | `ladder.test.ts` |
 | Unverified operators contribute nothing to venue territory | `ladder.test.ts` |
 | Calories may be named only inside a negation | `design.test.ts` (source scan) |
+| A flagged set can never set a personal record | `records.test.ts` |
+| Equalling a previous best is not a record | `records.test.ts` |
+| An injured session still credits the sets completed before stopping | `systems.test.ts` |
 
 The source scans exist because "we agreed not to use drop shadows" survives about
 two sprints, and a filesystem check in CI survives the project.

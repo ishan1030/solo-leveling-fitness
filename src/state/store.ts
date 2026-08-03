@@ -21,6 +21,12 @@ import {
   toIsoDate,
   type RollingGain,
 } from '../engine/progression';
+import {
+  detectRecords,
+  recordsWorthCelebrating,
+  type DetectedRecord,
+  type RecordBook,
+} from '../engine/records';
 import { scoreSession, type SessionScore } from '../engine/scoring';
 import { INITIAL_STREAK, pauseStreak, recordSession, type StreakState } from '../engine/streaks';
 import {
@@ -60,7 +66,10 @@ export interface SessionSummary {
   levelsGained: number[];
   /** What the §5 weekly cap withheld, surfaced rather than hidden. */
   withheld: Record<string, number>;
-  prs: string[];
+  /** Every record set, including first-ever baselines. */
+  records: DetectedRecord[];
+  /** The subset worth a §19 moment-3 screen — genuine improvements only. */
+  celebratedRecords: DetectedRecord[];
 }
 
 interface AppState {
@@ -86,6 +95,8 @@ interface AppState {
   sessions: LoggedSession[];
   activeSession: LoggedSession | null;
   lastSummary: SessionSummary | null;
+  /** §7: PR history per movement. Persisted with everything else. */
+  records: RecordBook;
 
   entitlements: EntitlementState;
   coachPersonality: CoachPersonality;
@@ -154,6 +165,7 @@ export const useApp = create<AppState>()(
       sessions: [],
       activeSession: null,
       lastSummary: null,
+      records: {},
       entitlements: { subscription: 'NONE', ownsSeasonPass: false, trialEndsAt: null },
       coachPersonality: 'STRICT_TRAINER',
       pendingSync: [],
@@ -292,6 +304,15 @@ export const useApp = create<AppState>()(
           now,
         });
 
+        // §7: PRs are detected from the *scored* session, so a set flagged as
+        // implausible cannot set a record.
+        const detection = detectRecords(
+          score,
+          finished.id,
+          finished.startedAt,
+          state.records,
+        );
+
         set({
           profile: {
             ...profile,
@@ -306,13 +327,15 @@ export const useApp = create<AppState>()(
           rollingGain: gain.rollingGain,
           rollingWindowStart: windowExpired ? toIsoDate(now) : windowStart,
           streak: streakUpdate.state,
+          records: detection.book,
           lastSummary: {
             sessionId: finished.id,
             score,
             xpAwarded: score.xp,
             levelsGained: levelling.levelsGained,
             withheld: gain.withheld,
-            prs: [],
+            records: detection.records,
+            celebratedRecords: recordsWorthCelebrating(detection.records),
           },
           pendingSync: [...state.pendingSync, `session:${finished.id}`],
         });
@@ -322,6 +345,14 @@ export const useApp = create<AppState>()(
        * §15: "A permanently visible STOP / I'M INJURED control that ends the
        * session, logs it with no penalty, pauses streaks, and offers a recovery
        * path."
+       *
+       * "No penalty" is read strictly: every set completed before the operator
+       * stopped scores exactly as it would have otherwise, and can still set a
+       * PR. Discarding work already done because the next set hurt would itself
+       * be a penalty for getting injured, which §21 forbids.
+       *
+       * What the abort does is protect everything downstream — the streak
+       * pauses, decay does not start, and all challenge prompts are suppressed.
        */
       abortSessionForInjury: () => {
         const state = get();
@@ -335,16 +366,47 @@ export const useApp = create<AppState>()(
           abortedForInjury: true,
         };
 
+        const score = scoreSession(finished, scoringProfileFor, DEFAULT_BODYWEIGHT_KG);
+
+        const windowStart = state.rollingWindowStart;
+        const windowExpired =
+          windowStart === null ||
+          (now.getTime() - new Date(`${windowStart}T00:00:00Z`).getTime()) / 86_400_000 >= 7;
+        const rollingGain = windowExpired ? NO_ROLLING_GAIN : state.rollingGain;
+
+        const gain = applyStatGain(profile.pillars, score.proposedPillarPoints, rollingGain);
+        const levelling = awardXp(profile.level, profile.xpIntoLevel, score.xp);
+        const cps = computeCps(gain.pillars);
+
+        const detection = detectRecords(score, finished.id, finished.startedAt, state.records);
         const paused = pauseStreak(state.streak, 'injury', now);
 
         set({
           sessions: [...state.sessions, finished],
           activeSession: null,
           streak: paused.state,
-          // No stat change, no XP, no streak break, and lastSessionDate is
-          // updated so the §5 decay clock does not start running either.
-          profile: { ...profile, pausedFor: 'injury', lastSessionDate: toIsoDate(now) },
-          lastSummary: null,
+          records: detection.book,
+          rollingGain: gain.rollingGain,
+          rollingWindowStart: windowExpired ? toIsoDate(now) : windowStart,
+          profile: {
+            ...profile,
+            pillars: gain.pillars,
+            level: levelling.level,
+            xpIntoLevel: levelling.xpIntoLevel,
+            pausedFor: 'injury',
+            // Updated so the §5 decay clock does not start running either.
+            lastSessionDate: toIsoDate(now),
+            careerPeakCps: Math.max(profile.careerPeakCps, cps),
+          },
+          lastSummary: {
+            sessionId: finished.id,
+            score,
+            xpAwarded: score.xp,
+            levelsGained: levelling.levelsGained,
+            withheld: gain.withheld,
+            records: detection.records,
+            celebratedRecords: recordsWorthCelebrating(detection.records),
+          },
           pendingSync: [...state.pendingSync, `session:${finished.id}`],
         });
       },

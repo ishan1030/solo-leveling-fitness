@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { palette } from './design/tokens';
 import { TabBar, type Tab } from './nav/TabBar';
 import { requiresMedicalStop } from './engine/types';
+import { getExercise } from './data/exercises';
 import { CalibrationResumeScreen, CalibrationScreen } from './screens/Calibration';
 import { CheckInScreen } from './screens/CheckIn';
 import { HomeScreen } from './screens/Home';
@@ -12,6 +13,7 @@ import { LadderScreen } from './screens/Ladder';
 import { NewPrScreen, TierUpScreen } from './screens/Moments';
 import { ProfileScreen } from './screens/Profile';
 import { RankCardScreen } from './screens/RankCard';
+import { RecordsScreen } from './screens/Records';
 import { RevealScreen } from './screens/Reveal';
 import { LogInjuryScreen, MedicalStopScreen, SettingsScreen } from './screens/Safety';
 import { SeasonScreen } from './screens/Season';
@@ -42,6 +44,7 @@ type Modal =
   | { kind: 'checkin' }
   | { kind: 'card' }
   | { kind: 'settings' }
+  | { kind: 'records' }
   | { kind: 'log_injury' }
   | { kind: 'medical_stop' }
   | { kind: 'tier_up'; from: Parameters<typeof TierUpScreen>[0]['from']; to: Parameters<typeof TierUpScreen>[0]['to'] }
@@ -89,7 +92,28 @@ export default function App() {
 
           {/* ---------------- Modals ---------------- */}
           {phase === 'ACTIVE' && modal.kind === 'session' && (
-            <SessionScreen onDone={() => setModal({ kind: 'summary' })} />
+            <SessionScreen
+              onDone={() => {
+                // §19 moment 3 fires only for a genuine improvement. A first-ever
+                // entry is a baseline, and celebrating every operator's first log
+                // of every movement would make the moment worthless.
+                const summary = useApp.getState().lastSummary;
+                const best = summary?.celebratedRecords[0];
+
+                if (best) {
+                  const exercise = getExercise(best.record.exerciseId);
+                  setModal({
+                    kind: 'new_pr',
+                    movement: exercise?.name ?? best.record.exerciseId,
+                    value: best.record.value,
+                    unit: best.record.unit,
+                    previousBest: best.previous?.value ?? null,
+                  });
+                } else {
+                  setModal({ kind: 'summary' });
+                }
+              }}
+            />
           )}
           {phase === 'ACTIVE' && modal.kind === 'summary' && (
             <SessionSummaryScreen onDone={close} />
@@ -131,8 +155,12 @@ export default function App() {
               value={modal.value}
               unit={modal.unit}
               previousBest={modal.previousBest}
-              onDone={close}
+              // The PR moment interrupts the summary, it does not replace it.
+              onDone={() => setModal({ kind: 'summary' })}
             />
+          )}
+          {phase === 'ACTIVE' && modal.kind === 'records' && (
+            <RecordsScreen onDone={close} />
           )}
 
           {/* ---------------- Tabs ---------------- */}
@@ -159,6 +187,7 @@ export default function App() {
                   <ProfileScreen
                     onShowRankCard={() => setModal({ kind: 'card' })}
                     onCheckIn={() => setModal({ kind: 'checkin' })}
+                    onShowRecords={() => setModal({ kind: 'records' })}
                   />
                 )}
               </View>
