@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
+  Button,
   Divider,
   Notice,
   Panel,
@@ -34,7 +35,13 @@ import { useWorld } from '../state/world';
 
 type Board = 'venue' | 'city' | 'global';
 
-export function LadderScreen() {
+export function LadderScreen({
+  onShowTerritory,
+  onShowTrials,
+}: {
+  onShowTerritory: () => void;
+  onShowTrials: () => void;
+}) {
   const profile = useApp((s) => s.profile);
   const standing = useApp((s) => s.standing());
   const operators = useWorld((s) => s.operators);
@@ -216,9 +223,22 @@ export function LadderScreen() {
                 The top venue in {cityName} holds the city publicly for a month.
                 Its members carry a temporary badge for as long as they hold it.
               </Text>
+              <View style={{ height: space.sm }} />
+              <Button label="Open territory" variant="secondary" onPress={onShowTerritory} />
             </Panel>
           </>
         )}
+
+        <View style={{ height: space.lg }} />
+        <SectionLabel>Trial</SectionLabel>
+        <Panel>
+          <Text style={[type.small, { color: palette.muted }]}>
+            One timed challenge a week, the same one for every operator. Opt-in —
+            skipping it costs nothing.
+          </Text>
+          <View style={{ height: space.sm }} />
+          <Button label="This week's trial" variant="secondary" onPress={onShowTrials} />
+        </Panel>
 
         <View style={{ height: space.xxxl }} />
       </ScrollView>

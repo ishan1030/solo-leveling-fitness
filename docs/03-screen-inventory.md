@@ -12,13 +12,13 @@ are implemented against the same engine, which is complete for all of them.
 | B · Daily loop | 5 | 5 |
 | C · Progression | 5 | 5 |
 | D · Social | 6 | 11 |
-| E · Territory | 2 | 4 |
-| F · Ladder | 2 | 3 |
-| G · Seasons | 3 | 4 |
+| E · Territory | 4 | 4 |
+| F · Ladder | 3 | 3 |
+| G · Seasons | 4 | 4 |
 | H · Coach | 4 | 4 |
 | I · Commerce | 2 | 4 |
-| J · Safety | 4 | 6 |
-| **Total** | **46** | **59** |
+| J · Safety | 5 | 6 |
+| **Total** | **52** | **59** |
 
 Plus all five §19 moment screens.
 
@@ -28,14 +28,10 @@ complete and tested — what is missing is the screen, not the logic.
 | Screen | Engine ready | Blocked on |
 |---|---|---|
 | D1–D2 Friends, add friend | — | Friend graph is server-side; no client engine to build against |
-| D5–D6 Guilds | Partially — contribution cap specified, not implemented | Guild entity is server-owned |
+| D5–D6 Guilds | **`guilds.ts` complete** — contribution cap, roles, weekly quests, all tested | Guild entity is server-owned; roster sync has no local model |
 | D11 Boss raid | `raids.ts`, `isBossRaid` | Global completion counter needs a backend |
-| E2, E4 City board, venue profile | `ladder.ts` `buildVenueStandings` | No blocker |
-| F3 Trial leaderboard | `quests.ts` `trialForWeek` | No blocker |
-| G4 Titles | `seasons.ts` `seasonRewardsFor` | No blocker |
 | I2–I3 Pass purchase, manage subscription | `entitlements.ts` | Store SDK integration + confirmed pricing |
-| J3 Recovery path | — | Content, not code |
-| J6 Recalibrate | `canRecalibrate` | No blocker; UI reuses the calibration flow |
+| J6 Recalibrate | `canRecalibrate` | Gated to 90 days; the button is present and correctly disabled, the re-entry flow is not built |
 
 ---
 
@@ -233,9 +229,9 @@ single and a higher-volume set are different achievements and both are kept.
 | # | Screen | Key states |
 |---|---|---|
 | E1 | VENUE LEADERBOARD **BUILT** | Your venue · city rank · national · global |
-| E2 | CITY LEADERBOARD | Bharatpur first, then national, then global |
+| E2 | CITY LEADERBOARD **BUILT** | Bharatpur first, then national, then global |
 | E3 | TERRITORY CYCLE **BUILT** | Current holder · days remaining · your contribution |
-| E4 | VENUE PROFILE | Certified badge · member count · challenges |
+| E4 | VENUE PROFILE **BUILT** | Certified badge · member count · challenges |
 
 ---
 
@@ -245,7 +241,7 @@ single and a higher-volume set are different achievements and both are kept.
 |---|---|---|
 | F1 | GLOBAL LADDER **BUILT** | Above COBALT: **verified only** |
 | F2 | TIER LADDER **BUILT** | Filtered to a single tier |
-| F3 | TRIAL LEADERBOARD | Weekly, one trial, opt-in |
+| F3 | TRIAL LEADERBOARD **BUILT** | Weekly, one trial, opt-in |
 
 ---
 
@@ -256,7 +252,7 @@ single and a higher-volume set are different achievements and both are kept.
 | G1 | SEASON HUB **BUILT** | Days remaining · placement · pass progress |
 | G2 | PASS **BUILT** | 50 tiers · free track · paid track · **XP from quests only** |
 | G3 | SEASON CLOSE **BUILT** | §19 moment screen 5 |
-| G4 | TITLES | Owned, browsable; one equipped |
+| G4 | TITLES **BUILT** | Owned, browsable; one equipped |
 
 ---
 
@@ -291,7 +287,7 @@ panel on Home carrying the next-session recommendation.
 |---|---|---|
 | J1 | MEDICAL STOP **BUILT** | Full-screen; suppresses all challenge prompts |
 | J2 | LOG INJURY / ILLNESS **BUILT** | Pauses streak and decay indefinitely, no penalty |
-| J3 | RECOVERY PATH | Offered after any injury log |
+| J3 | RECOVERY PATH **BUILT** | Offered after any injury log |
 | J4 | PRIVACY **BUILT** | §10 location policy in plain language |
 | J5 | ACCESSIBILITY | Reduced motion · captions · text size |
 | J6 | RECALIBRATE | Available every 90 days; countdown otherwise |

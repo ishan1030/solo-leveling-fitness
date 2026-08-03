@@ -16,8 +16,15 @@ import { ProfileScreen } from './screens/Profile';
 import { RankCardScreen } from './screens/RankCard';
 import { RecordsScreen } from './screens/Records';
 import { RevealScreen } from './screens/Reveal';
-import { LogInjuryScreen, MedicalStopScreen, SettingsScreen } from './screens/Safety';
+import {
+  LogInjuryScreen,
+  MedicalStopScreen,
+  RecoveryPathScreen,
+  SettingsScreen,
+} from './screens/Safety';
 import { SeasonScreen } from './screens/Season';
+import { TerritoryScreen } from './screens/Territory';
+import { TrialsScreen } from './screens/Trials';
 import { SessionScreen, SessionSummaryScreen } from './screens/Session';
 import { SocialScreen } from './screens/Social';
 import { useApp } from './state/store';
@@ -47,6 +54,9 @@ type Modal =
   | { kind: 'settings' }
   | { kind: 'records' }
   | { kind: 'coach' }
+  | { kind: 'territory' }
+  | { kind: 'trials' }
+  | { kind: 'recovery' }
   | { kind: 'log_injury' }
   | { kind: 'medical_stop' }
   | { kind: 'tier_up'; from: Parameters<typeof TierUpScreen>[0]['from']; to: Parameters<typeof TierUpScreen>[0]['to'] }
@@ -138,8 +148,18 @@ export default function App() {
             />
           )}
           {phase === 'ACTIVE' && modal.kind === 'log_injury' && (
-            <LogInjuryScreen onDone={close} />
+            <LogInjuryScreen
+              onDone={close}
+              onShowRecoveryPath={() => setModal({ kind: 'recovery' })}
+            />
           )}
+          {phase === 'ACTIVE' && modal.kind === 'recovery' && (
+            <RecoveryPathScreen onDone={close} />
+          )}
+          {phase === 'ACTIVE' && modal.kind === 'territory' && (
+            <TerritoryScreen onDone={close} />
+          )}
+          {phase === 'ACTIVE' && modal.kind === 'trials' && <TrialsScreen onDone={close} />}
           {phase === 'ACTIVE' && modal.kind === 'medical_stop' && (
             <MedicalStopScreen
               onDismiss={() => {
@@ -184,7 +204,12 @@ export default function App() {
                     onOpenCoach={() => setModal({ kind: 'coach' })}
                   />
                 )}
-                {tab === 'ladder' && <LadderScreen />}
+                {tab === 'ladder' && (
+                  <LadderScreen
+                    onShowTerritory={() => setModal({ kind: 'territory' })}
+                    onShowTrials={() => setModal({ kind: 'trials' })}
+                  />
+                )}
                 {tab === 'social' && <SocialScreen />}
                 {tab === 'season' && <SeasonScreen />}
                 {tab === 'profile' && (

@@ -98,7 +98,13 @@ export function MedicalStopScreen({ onDismiss }: { onDismiss: () => void }) {
  * missing training. It contains no encouragement to return early, no countdown,
  * and no mention of what they will miss.
  */
-export function LogInjuryScreen({ onDone }: { onDone: () => void }) {
+export function LogInjuryScreen({
+  onDone,
+  onShowRecoveryPath,
+}: {
+  onDone: () => void;
+  onShowRecoveryPath: () => void;
+}) {
   const pauseFor = useApp((s) => s.pauseFor);
   const streak = useApp((s) => s.streak);
   const personality = useApp((s) => s.coachPersonality);
@@ -162,7 +168,8 @@ export function LogInjuryScreen({ onDone }: { onDone: () => void }) {
           label="Pause my training"
           onPress={() => {
             pauseFor(reason);
-            onDone();
+            // §15: "offers a recovery path."
+            onShowRecoveryPath();
           }}
         />
         <View style={{ height: space.xs }} />
@@ -264,6 +271,92 @@ export function SettingsScreen({
 
         <View style={{ height: space.lg }} />
         <Button label="Medical information" variant="secondary" onPress={onMedicalInfo} />
+
+        <View style={{ height: space.lg }} />
+        <Text style={[type.small, { color: palette.muted }]}>
+          {STATIC_COPY.medicalDisclaimer}
+        </Text>
+        <View style={{ height: space.xxxl }} />
+      </ScrollView>
+    </Screen>
+  );
+}
+
+/**
+ * §15 / §J3 — the recovery path, offered after any injury log.
+ *
+ * Deliberately not a rehab protocol. This app is not qualified to write one and
+ * §21's disclaimer says so. What it can honestly offer is the mechanics of
+ * coming back without re-injuring yourself: start below where you left off,
+ * change one variable at a time, and stop meaning stop.
+ */
+export function RecoveryPathScreen({ onDone }: { onDone: () => void }) {
+  const profile = useApp((s) => s.profile);
+  const resume = useApp((s) => s.resume);
+  const streak = useApp((s) => s.streak);
+
+  return (
+    <Screen>
+      <ScrollView contentContainerStyle={styles.content}>
+        <SectionLabel>Coming back</SectionLabel>
+        <Text style={[type.display, { color: palette.ink }]}>No rush.</Text>
+        <Text style={[type.small, { color: palette.muted, marginTop: space.xs }]}>
+          Nothing here expires. Your streak is held at {streak.count}, your rank
+          is frozen, and no part of this app is counting the days.
+        </Text>
+
+        <View style={{ height: space.lg }} />
+        <SectionLabel>When you do come back</SectionLabel>
+        <Panel accent={palette.signal}>
+          {[
+            [
+              'You start lighter',
+              'AXIOM opens your returning block well below where you stopped. That is not a judgement about you — it is how everyone should return, and it is not negotiable in the programming.',
+            ],
+            [
+              'One variable at a time',
+              'Load or reps, never both. Progress is capped at 5% a week even when you feel ready for more, because week one is where returning operators get hurt again.',
+            ],
+            [
+              'Stop still means stop',
+              'The STOP control is on every session screen. Using it a second time costs exactly as little as the first.',
+            ],
+            [
+              'Everything you completed counts',
+              'Including the sets you finished in the session where you got hurt. Losing those would be a penalty for getting injured, and this app does not do that.',
+            ],
+          ].map(([heading, body]) => (
+            <View key={heading} style={{ marginBottom: space.sm }}>
+              <Text style={[type.label, { color: palette.signal }]}>
+                {String(heading).toUpperCase()}
+              </Text>
+              <Text style={[type.small, { color: palette.ink, marginTop: space.xxs }]}>
+                {body}
+              </Text>
+            </View>
+          ))}
+        </Panel>
+
+        <View style={{ height: space.md }} />
+        <Notice tone="caution">
+          If something still hurts, it is too early — regardless of what any app
+          tells you. See a clinician before you load it.
+        </Notice>
+
+        <View style={{ height: space.lg }} />
+        {profile?.pausedFor ? (
+          <Button
+            label="I'm ready to train"
+            onPress={() => {
+              resume();
+              onDone();
+            }}
+          />
+        ) : (
+          <Button label="Done" onPress={onDone} />
+        )}
+        <View style={{ height: space.xs }} />
+        <Button label="Not yet" variant="ghost" onPress={onDone} />
 
         <View style={{ height: space.lg }} />
         <Text style={[type.small, { color: palette.muted }]}>

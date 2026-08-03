@@ -37,7 +37,7 @@ import { useWorld } from '../state/world';
  * proof that buying it does not help you climb.
  */
 
-type Tab = 'season' | 'pass' | 'premium';
+type Tab = 'season' | 'pass' | 'titles' | 'premium';
 
 export function SeasonScreen() {
   const [tab, setTab] = useState<Tab>('season');
@@ -50,6 +50,7 @@ export function SeasonScreen() {
             [
               ['season', 'SEASON'],
               ['pass', 'PASS'],
+              ['titles', 'TITLES'],
               ['premium', 'PREMIUM'],
             ] as const
           ).map(([value, label]) => (
@@ -72,6 +73,7 @@ export function SeasonScreen() {
 
         {tab === 'season' && <SeasonTab />}
         {tab === 'pass' && <PassTab />}
+        {tab === 'titles' && <TitlesTab />}
         {tab === 'premium' && <PremiumTab />}
 
         <View style={{ height: space.xxxl }} />
@@ -263,6 +265,112 @@ function PassTab() {
       <Text style={[type.small, { color: palette.muted, marginTop: space.xs }]}>
         Price to be confirmed — see docs/14-open-questions.md.
       </Text>
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// G4 · Titles
+// ---------------------------------------------------------------------------
+
+/**
+ * §17: "Titles are display text; one equipped at a time, all owned titles
+ * browsable."
+ *
+ * Display text is the whole point — a title carries no ladder effect whatsoever,
+ * which is what lets them be given out generously without touching §18's
+ * fairness rule.
+ */
+function TitlesTab() {
+  const archive = useWorld((s) => s.archive);
+  const [equipped, setEquipped] = useState<string | null>(null);
+
+  // Owned titles are derived from the career archive: every season that
+  // finished inside the top 100 granted one, permanently.
+  const owned = useMemo(() => {
+    const fromSeasons = archive
+      .filter((entry) => entry.placement !== null && entry.placement <= 100)
+      .map((entry) => ({
+        id: `title_s${entry.seasonNumber}_top100`,
+        label: `Season ${entry.seasonNumber} Ascendant`,
+        detail: `Top 100 · placed ${entry.placement}`,
+      }));
+
+    return fromSeasons;
+  }, [archive]);
+
+  return (
+    <View>
+      <Text style={[type.label, { color: palette.muted }]}>TITLES</Text>
+      <Text style={[type.display, { color: palette.ink }]}>
+        {owned.length} owned
+      </Text>
+      <Text style={[type.small, { color: palette.muted, marginTop: space.xs }]}>
+        Display text only. A title never affects your rank, your score, or
+        anything on the ladder — which is exactly why they can be handed out for
+        real achievements without compromising anything.
+      </Text>
+
+      <View style={{ height: space.md }} />
+
+      {owned.length === 0 ? (
+        <Panel>
+          <Text style={[type.body, { color: palette.ink }]}>Nothing yet.</Text>
+          <Text style={[type.small, { color: palette.muted, marginTop: space.xxs }]}>
+            Finish a season inside the top 100 and the title is yours
+            permanently — including after the season resets, and including if you
+            never place again.
+          </Text>
+        </Panel>
+      ) : (
+        <Panel>
+          {owned.map((title, index) => {
+            const isEquipped = equipped === title.id;
+            return (
+              <View key={title.id}>
+                {index > 0 && <View style={styles.rowDivider} />}
+                <Pressable
+                  onPress={() => setEquipped(isEquipped ? null : title.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: isEquipped }}
+                  accessibilityLabel={`${title.label}. ${title.detail}. ${
+                    isEquipped ? 'Equipped.' : 'Tap to equip.'
+                  }`}
+                  style={styles.titleRow}
+                >
+                  <View style={[styles.radio, isEquipped && styles.radioSelected]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[type.body, { color: palette.ink }]}>{title.label}</Text>
+                    <Text style={[type.dataSmall, { color: palette.muted }]}>
+                      {title.detail}
+                    </Text>
+                  </View>
+                  {isEquipped && (
+                    <Text style={[type.label, { color: palette.signal }]}>EQUIPPED</Text>
+                  )}
+                </Pressable>
+              </View>
+            );
+          })}
+        </Panel>
+      )}
+
+      <View style={{ height: space.md }} />
+      <Panel>
+        <Text style={[type.label, { color: palette.muted }]}>HOW TITLES ARE EARNED</Text>
+        <View style={{ height: space.xs }} />
+        {[
+          ['Top 100 in a season', 'Seasonal title, permanent'],
+          ['Season winner', 'Permanent champion mark'],
+          ['Season pass tiers', 'Cosmetic titles, free and paid tracks'],
+          ['Anomalies', 'Hidden, discovered by behaviour'],
+        ].map(([source, reward]) => (
+          <View key={source} style={styles.rewardRow}>
+            <Text style={[type.small, { color: palette.muted }]}>{source}</Text>
+            <Text style={[type.dataSmall, { color: palette.ink }]}>{reward}</Text>
+          </View>
+        ))}
+      </Panel>
     </View>
   );
 }
@@ -460,6 +568,23 @@ const styles = StyleSheet.create({
   rowDivider: {
     height: surface.hairlineWidth,
     backgroundColor: surface.borderColor,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    minHeight: 56,
+  },
+  radio: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: palette.muted,
+  },
+  radioSelected: {
+    backgroundColor: palette.signal,
+    borderColor: palette.signal,
   },
   momentRoot: {
     flex: 1,

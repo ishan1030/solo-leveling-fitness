@@ -21,7 +21,7 @@ pass. Built to the master specification in
 
 ```bash
 npm install
-npm test          # 395 tests
+npm test          # 426 tests
 npm run typecheck
 npm start         # Expo
 ```
@@ -35,10 +35,10 @@ Hermes bundle.
 
 A complete v1.0 build: the progression engine, calibration, logging, quests,
 raids, rivals, verification, ladders, territory, seasons, entitlements, a design
-system, **46 of the 59 specified screens plus all five moment screens**, and the
+system, **52 of the 59 specified screens plus all five moment screens**, and the
 full specification.
 
-The 13 unbuilt screens are listed in
+The 7 unbuilt screens are listed in
 [the screen inventory](docs/03-screen-inventory.md#build-status) with what each
 is blocked on. Their engines are complete and tested — what is missing is the
 screen, not the logic.
@@ -70,13 +70,14 @@ src/
 │   ├── ladder.ts        Board construction, §10 filtering, §12 territory
 │   ├── records.ts       PR detection per movement and metric, history series
 │   ├── coach.ts         AXIOM: next session, recovery, ≤5%/week progression
+│   ├── guilds.ts        Roster rules, per-member contribution cap, guild quests
 │   └── entitlements.ts  The §18 fairness rule, enforced by the type system
 ├── data/            Exercise library (302), AXIOM copy bank, rule tests
 ├── design/          Tokens and components
 ├── nav/             Tab bar
 ├── screens/         Calibration · reveal · home · session · check-in · ladder
 │                    social · profile · season · rank card · records ·
-│                    coach · moments · safety
+│                    coach · territory · trials · moments · safety
 └── state/           store.ts   operator state, persisted, offline-first
                      world.ts   server-cached ladder/venues/raids, not persisted
 ```
@@ -146,6 +147,8 @@ interface LapseOutcome {
 | A progression step changes at most one variable | `coach.test.ts` |
 | A deload lands every 4th week and cannot be skipped | `coach.test.ts` |
 | AXIOM never prescribes calories, weight or fasting, in any configuration | `coach.test.ts` |
+| One power user cannot carry a guild roster | `guilds.test.ts` |
+| Past the cap, only recruiting raises a guild's contribution | `guilds.test.ts` |
 
 The source scans exist because "we agreed not to use drop shadows" survives about
 two sprints, and a filesystem check in CI survives the project.
