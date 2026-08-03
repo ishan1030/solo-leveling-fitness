@@ -53,6 +53,13 @@ import { scoringProfileFor } from '../data/exercises';
  * app is fully functional if that never happens.
  */
 
+/** §14: "all coaching history stays readable" — including after a lapse. */
+export interface CoachingEntry {
+  at: string;
+  trigger: string;
+  line: string;
+}
+
 export type AppPhase =
   | 'CALIBRATION'
   | 'CALIBRATION_ABANDONED'
@@ -100,6 +107,10 @@ interface AppState {
 
   entitlements: EntitlementState;
   coachPersonality: CoachPersonality;
+  /** §14: append-only. Never cleared, including on a lapsed subscription. */
+  coachingHistory: CoachingEntry[];
+  /** §14: the Commander personality requires an explicit roleplay opt-in. */
+  commanderOptIn: boolean;
 
   /** Records not yet pushed to the server. Drained by the sync layer. */
   pendingSync: string[];
@@ -120,6 +131,10 @@ interface AppState {
 
   pauseFor: (reason: Exclude<PauseReason, null>) => void;
   resume: () => void;
+
+  setPersonality: (personality: CoachPersonality) => void;
+  acceptCommanderOptIn: () => void;
+  recordCoachingLine: (trigger: string, line: string) => void;
 
   applyDecayIfDue: () => void;
   standing: () => Standing | null;
@@ -168,6 +183,8 @@ export const useApp = create<AppState>()(
       records: {},
       entitlements: { subscription: 'NONE', ownsSeasonPass: false, trialEndsAt: null },
       coachPersonality: 'STRICT_TRAINER',
+      coachingHistory: [],
+      commanderOptIn: false,
       pendingSync: [],
 
       // ---------------------------------------------------------------------
@@ -434,6 +451,28 @@ export const useApp = create<AppState>()(
       },
 
       // ---------------------------------------------------------------------
+
+      /**
+       * §14: ELITE_COMMANDER is "gated behind an explicit opt-in that states
+       * plainly that it is roleplay flavour, not coaching advice." Selecting it
+       * without that opt-in silently does nothing rather than failing loudly,
+       * because the only way to reach here without it is a programming error.
+       */
+      setPersonality: (personality) => {
+        if (personality === 'ELITE_COMMANDER' && !get().commanderOptIn) return;
+        set({ coachPersonality: personality });
+      },
+
+      acceptCommanderOptIn: () =>
+        set({ commanderOptIn: true, coachPersonality: 'ELITE_COMMANDER' }),
+
+      recordCoachingLine: (trigger, line) =>
+        set((state) => ({
+          coachingHistory: [
+            { at: new Date().toISOString(), trigger, line },
+            ...state.coachingHistory,
+          ].slice(0, 200),
+        })),
 
       applyDecayIfDue: () => {
         const state = get();

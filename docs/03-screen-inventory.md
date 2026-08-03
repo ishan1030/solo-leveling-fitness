@@ -15,10 +15,10 @@ are implemented against the same engine, which is complete for all of them.
 | E · Territory | 2 | 4 |
 | F · Ladder | 2 | 3 |
 | G · Seasons | 3 | 4 |
-| H · Coach | 0 | 4 |
+| H · Coach | 4 | 4 |
 | I · Commerce | 2 | 4 |
 | J · Safety | 4 | 6 |
-| **Total** | **42** | **59** |
+| **Total** | **46** | **59** |
 
 Plus all five §19 moment screens.
 
@@ -33,7 +33,6 @@ complete and tested — what is missing is the screen, not the logic.
 | E2, E4 City board, venue profile | `ladder.ts` `buildVenueStandings` | No blocker |
 | F3 Trial leaderboard | `quests.ts` `trialForWeek` | No blocker |
 | G4 Titles | `seasons.ts` `seasonRewardsFor` | No blocker |
-| H1–H4 Coach hub, personality, history, voice packs | `copy.ts` complete, TTS is `expo-speech` | No blocker |
 | I2–I3 Pass purchase, manage subscription | `entitlements.ts` | Store SDK integration + confirmed pricing |
 | J3 Recovery path | — | Content, not code |
 | J6 Recalibrate | `canRecalibrate` | No blocker; UI reuses the calibration flow |
@@ -263,12 +262,15 @@ single and a higher-volume set are different achievements and both are kept.
 
 ## H · Coach (§14)
 
+*`src/screens/Coach.tsx`* — all four **BUILT**, as three tabs plus an AXIOM
+panel on Home carrying the next-session recommendation.
+
 | # | Screen | Key states |
 |---|---|---|
-| H1 | AXIOM HUB | Free: text only, ≤2/day · Premium: voice |
-| H2 | PERSONALITY | Calm / Strict / **Commander behind explicit roleplay opt-in** |
-| H3 | COACHING HISTORY | Remains readable after a lapse |
-| H4 | VOICE PACKS | Download, on-device |
+| H1 | AXIOM HUB **BUILT** | Recommendation · deload week · conservative loading · suppressed (medical stop / paused) · free vs premium |
+| H2 | PERSONALITY **BUILT** | Calm / Strict / **Commander behind explicit roleplay opt-in**, which states plainly it is flavour not advice |
+| H3 | COACHING HISTORY **BUILT** | Empty · populated · explicitly survives a lapse |
+| H4 | VOICE PACKS **BUILT** | On-device engine · text-only when free · captions always |
 
 ---
 

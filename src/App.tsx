@@ -8,6 +8,7 @@ import { requiresMedicalStop } from './engine/types';
 import { getExercise } from './data/exercises';
 import { CalibrationResumeScreen, CalibrationScreen } from './screens/Calibration';
 import { CheckInScreen } from './screens/CheckIn';
+import { CoachScreen } from './screens/Coach';
 import { HomeScreen } from './screens/Home';
 import { LadderScreen } from './screens/Ladder';
 import { NewPrScreen, TierUpScreen } from './screens/Moments';
@@ -45,6 +46,7 @@ type Modal =
   | { kind: 'card' }
   | { kind: 'settings' }
   | { kind: 'records' }
+  | { kind: 'coach' }
   | { kind: 'log_injury' }
   | { kind: 'medical_stop' }
   | { kind: 'tier_up'; from: Parameters<typeof TierUpScreen>[0]['from']; to: Parameters<typeof TierUpScreen>[0]['to'] }
@@ -162,6 +164,7 @@ export default function App() {
           {phase === 'ACTIVE' && modal.kind === 'records' && (
             <RecordsScreen onDone={close} />
           )}
+          {phase === 'ACTIVE' && modal.kind === 'coach' && <CoachScreen onDone={close} />}
 
           {/* ---------------- Tabs ---------------- */}
           {phase === 'ACTIVE' && modal.kind === 'none' && (
@@ -178,6 +181,7 @@ export default function App() {
                     }}
                     onCheckIn={() => setModal({ kind: 'checkin' })}
                     onOpenSettings={() => setModal({ kind: 'settings' })}
+                    onOpenCoach={() => setModal({ kind: 'coach' })}
                   />
                 )}
                 {tab === 'ladder' && <LadderScreen />}

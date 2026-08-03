@@ -16,7 +16,9 @@ import { resolveReadiness } from '../engine/calibration';
 import { cpsForNextTier, describeLevelTierTension, xpForNextLevel } from '../engine/progression';
 import { generateDailyQuests, generateWeeklyQuest } from '../engine/quests';
 import { requiresMedicalStop } from '../engine/types';
+import { describeProgression } from '../engine/coach';
 import { STATIC_COPY } from '../data/copy';
+import { useRecommendation } from './Coach';
 import { useApp } from '../state/store';
 
 /**
@@ -31,11 +33,14 @@ export function HomeScreen({
   onStartSession,
   onCheckIn,
   onOpenSettings,
+  onOpenCoach,
 }: {
   onStartSession: () => void;
   onCheckIn: () => void;
   onOpenSettings: () => void;
+  onOpenCoach: () => void;
 }) {
+  const recommendation = useRecommendation();
   const profile = useApp((s) => s.profile);
   const standing = useApp((s) => s.standing());
   const streak = useApp((s) => s.streak);
@@ -166,6 +171,29 @@ export function HomeScreen({
               {`Your score is worth ${standing.uncappedTier}. Self-reported profiles show as ${standing.tier} until one session is verified.`}
             </Notice>
           </View>
+        )}
+
+        {/* §14: AXIOM's next-session recommendation drives the daily loop, so
+            it sits above the quest board rather than behind a tab. */}
+        {recommendation && !recommendation.suppressed && (
+          <>
+            <View style={{ height: space.lg }} />
+            <SectionLabel>AXIOM</SectionLabel>
+            <Panel accent={palette.signal}>
+              <Text style={[type.label, { color: palette.signal }]}>
+                NEXT SESSION · {recommendation.focusPillar.toUpperCase()}
+                {recommendation.isDeloadWeek ? ' · DELOAD' : ''}
+              </Text>
+              <Text style={[type.small, { color: palette.ink, marginTop: space.xs }]}>
+                {describeProgression(recommendation.progression)}
+              </Text>
+              <Text style={[type.small, { color: palette.muted, marginTop: space.xs }]}>
+                {recommendation.recovery.guidance}
+              </Text>
+              <View style={{ height: space.sm }} />
+              <Button label="Open AXIOM" variant="secondary" onPress={onOpenCoach} />
+            </Panel>
+          </>
         )}
 
         <View style={{ height: space.lg }} />

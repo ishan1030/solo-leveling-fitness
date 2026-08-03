@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import {
@@ -12,6 +12,7 @@ import {
 } from '../design/components';
 import { palette, space, surface, type } from '../design/tokens';
 import { METRIC_LABELS, formatRecord } from '../engine/records';
+import { lineFor } from '../data/copy';
 import { detectImplausible } from '../engine/scoring';
 import { EXERCISES, getExercise, scoringProfileFor, searchExercises } from '../data/exercises';
 import type { Exercise } from '../data/exercises';
@@ -326,6 +327,20 @@ function describeSet(set: LoggedSet): string {
 /** §7: post-session summary — PRs, pillar movement, XP, and what the coach noticed. */
 export function SessionSummaryScreen({ onDone }: { onDone: () => void }) {
   const summary = useApp((s) => s.lastSummary);
+  const personality = useApp((s) => s.coachPersonality);
+  const recordCoachingLine = useApp((s) => s.recordCoachingLine);
+
+  // §14: coaching history is append-only and stays readable forever. Recorded
+  // once per summary, keyed on the session id so a re-render cannot duplicate it.
+  const recordedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!summary || recordedFor.current === summary.sessionId) return;
+    recordedFor.current = summary.sessionId;
+    recordCoachingLine(
+      'SESSION_COMPLETE',
+      lineFor('SESSION_COMPLETE', personality).caption,
+    );
+  }, [summary, personality, recordCoachingLine]);
   if (!summary) {
     return (
       <Screen>
