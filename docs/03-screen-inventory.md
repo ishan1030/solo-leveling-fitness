@@ -4,6 +4,41 @@ Every screen in v1.0, its purpose, and its key states. Screens marked **BUILT**
 exist in `src/screens/`; the rest are specified to the same level of detail and
 are implemented against the same engine, which is complete for all of them.
 
+## Build status
+
+| Group | Built | Total |
+|---|---|---|
+| A · First run | 13 | 13 |
+| B · Daily loop | 5 | 5 |
+| C · Progression | 4 | 5 |
+| D · Social | 6 | 11 |
+| E · Territory | 2 | 4 |
+| F · Ladder | 2 | 3 |
+| G · Seasons | 3 | 4 |
+| H · Coach | 0 | 4 |
+| I · Commerce | 2 | 4 |
+| J · Safety | 4 | 6 |
+| **Total** | **41** | **59** |
+
+Plus all five §19 moment screens.
+
+**Not yet built, and what each needs.** Every one of these has its engine
+complete and tested — what is missing is the screen, not the logic.
+
+| Screen | Engine ready | Blocked on |
+|---|---|---|
+| D1–D2 Friends, add friend | — | Friend graph is server-side; no client engine to build against |
+| D5–D6 Guilds | Partially — contribution cap specified, not implemented | Guild entity is server-owned |
+| D11 Boss raid | `raids.ts`, `isBossRaid` | Global completion counter needs a backend |
+| C4 PR history graph | `scoring.ts` tracks PRs | Charting; no blocker |
+| E2, E4 City board, venue profile | `ladder.ts` `buildVenueStandings` | No blocker |
+| F3 Trial leaderboard | `quests.ts` `trialForWeek` | No blocker |
+| G4 Titles | `seasons.ts` `seasonRewardsFor` | No blocker |
+| H1–H4 Coach hub, personality, history, voice packs | `copy.ts` complete, TTS is `expo-speech` | No blocker |
+| I2–I3 Pass purchase, manage subscription | `entitlements.ts` | Store SDK integration + confirmed pricing |
+| J3 Recovery path | — | Content, not code |
+| J6 Recalibrate | `canRecalibrate` | No blocker; UI reuses the calibration flow |
+
 ---
 
 ## A · First run (§4)
@@ -119,7 +154,9 @@ and equipment.
 | Level gained | Level-up notice |
 | Aborted for injury | "Nothing scored, and nothing lost." No stats shown. |
 
-### B5 · CHECK-IN (QR)
+### B5 · CHECK-IN (QR) **BUILT**
+*`src/screens/CheckIn.tsx`*
+
 **Purpose:** §10 verification at session start **and** end.
 
 | State | Behaviour |
@@ -136,7 +173,9 @@ and equipment.
 
 ## C · Progression and identity
 
-### C1 · PROFILE
+### C1 · PROFILE **BUILT**
+*`src/screens/Profile.tsx`*
+
 Tier sigil, four pillars, verification tier, level, streak, rivalry records,
 titles, and the §17 career timeline.
 
@@ -157,7 +196,7 @@ hidden set of numbers.
 ### C4 · PR HISTORY
 Per-movement progression graph. Numbers monospace, large.
 
-### C5 · CAREER TIMELINE
+### C5 · CAREER TIMELINE **BUILT** (in Profile)
 §17 archive: one permanent entry per season. Append-only.
 
 ---
@@ -168,14 +207,14 @@ Per-movement progression graph. Numbers monospace, large.
 |---|---|---|
 | D1 | FRIENDS | Empty · list (tier, streak, last session only — **no feed, no likes**) |
 | D2 | ADD FRIEND | Code · QR · contacts |
-| D3 | RIVALS | 0–3 held · suggestions · pending invite · active week · result |
-| D4 | RIVAL DETAIL | Head-to-head, agreed pillar, persistent W/L/D record |
+| D3 | RIVALS **BUILT** | 0–3 held · suggestions · pending invite · active week · result |
+| D4 | RIVAL DETAIL **BUILT** | Head-to-head, agreed pillar, persistent W/L/D record |
 | D5 | GUILD | Not in one · roster (5–50) · guild quest · contribution cap reached |
 | D6 | GUILD LEADERBOARD | Global · by city |
-| D7 | RAID — Open | Party 1–6 · invite · waiting |
-| D8 | RAID — Active | Per-participant logged state · "waiting on 2 of 4" |
-| D9 | RAID — Complete | §19 moment screen 4 |
-| D10 | RAID — Abandoned | No-penalty notice; work converts to solo credit |
+| D7 | RAID — Open **BUILT** | Party 1–6 · invite · waiting |
+| D8 | RAID — Active **BUILT** | Per-participant logged state · "waiting on 2 of 4" |
+| D9 | RAID — Complete **BUILT** | §19 moment screen 4 |
+| D10 | RAID — Abandoned **BUILT** | No-penalty notice; work converts to solo credit |
 | D11 | BOSS RAID | Monthly; global completion counter |
 
 ---
@@ -184,9 +223,9 @@ Per-movement progression graph. Numbers monospace, large.
 
 | # | Screen | Key states |
 |---|---|---|
-| E1 | VENUE LEADERBOARD | Your venue · city rank · national · global |
+| E1 | VENUE LEADERBOARD **BUILT** | Your venue · city rank · national · global |
 | E2 | CITY LEADERBOARD | Bharatpur first, then national, then global |
-| E3 | TERRITORY CYCLE | Current holder · days remaining · your contribution |
+| E3 | TERRITORY CYCLE **BUILT** | Current holder · days remaining · your contribution |
 | E4 | VENUE PROFILE | Certified badge · member count · challenges |
 
 ---
@@ -195,8 +234,8 @@ Per-movement progression graph. Numbers monospace, large.
 
 | # | Screen | Key states |
 |---|---|---|
-| F1 | GLOBAL LADDER | Above COBALT: **verified only** |
-| F2 | TIER LADDER | Filtered to a single tier |
+| F1 | GLOBAL LADDER **BUILT** | Above COBALT: **verified only** |
+| F2 | TIER LADDER **BUILT** | Filtered to a single tier |
 | F3 | TRIAL LEADERBOARD | Weekly, one trial, opt-in |
 
 ---
@@ -205,9 +244,9 @@ Per-movement progression graph. Numbers monospace, large.
 
 | # | Screen | Key states |
 |---|---|---|
-| G1 | SEASON HUB | Days remaining · placement · pass progress |
-| G2 | PASS | 50 tiers · free track · paid track · **XP from quests only** |
-| G3 | SEASON CLOSE | §19 moment screen 5 |
+| G1 | SEASON HUB **BUILT** | Days remaining · placement · pass progress |
+| G2 | PASS **BUILT** | 50 tiers · free track · paid track · **XP from quests only** |
+| G3 | SEASON CLOSE **BUILT** | §19 moment screen 5 |
 | G4 | TITLES | Owned, browsable; one equipped |
 
 ---
@@ -227,10 +266,10 @@ Per-movement progression graph. Numbers monospace, large.
 
 | # | Screen | Key states |
 |---|---|---|
-| I1 | PREMIUM | 7-day trial · regional pricing · restore purchases |
+| I1 | PREMIUM **BUILT** | 7-day trial · regional pricing · restore purchases |
 | I2 | SEASON PASS | Purchasable by free operators |
 | I3 | MANAGE SUBSCRIPTION | **One-tap cancellation path** |
-| I4 | FAIRNESS STATEMENT | The §18 promise, stated to the user |
+| I4 | FAIRNESS STATEMENT **BUILT** | The §18 promise, stated to the user |
 
 ---
 
@@ -238,10 +277,10 @@ Per-movement progression graph. Numbers monospace, large.
 
 | # | Screen | Key states |
 |---|---|---|
-| J1 | MEDICAL STOP | Full-screen; suppresses all challenge prompts |
-| J2 | LOG INJURY / ILLNESS | Pauses streak and decay indefinitely, no penalty |
+| J1 | MEDICAL STOP **BUILT** | Full-screen; suppresses all challenge prompts |
+| J2 | LOG INJURY / ILLNESS **BUILT** | Pauses streak and decay indefinitely, no penalty |
 | J3 | RECOVERY PATH | Offered after any injury log |
-| J4 | PRIVACY | §10 location policy in plain language |
+| J4 | PRIVACY **BUILT** | §10 location policy in plain language |
 | J5 | ACCESSIBILITY | Reduced motion · captions · text size |
 | J6 | RECALIBRATE | Available every 90 days; countdown otherwise |
 

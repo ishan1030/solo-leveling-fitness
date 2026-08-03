@@ -27,7 +27,15 @@ import { useApp } from '../state/store';
  * with today's obligation — the active quest — rather than with a summary of
  * the past, because the past does not bring anyone back on day 12.
  */
-export function HomeScreen({ onStartSession }: { onStartSession: () => void }) {
+export function HomeScreen({
+  onStartSession,
+  onCheckIn,
+  onOpenSettings,
+}: {
+  onStartSession: () => void;
+  onCheckIn: () => void;
+  onOpenSettings: () => void;
+}) {
   const profile = useApp((s) => s.profile);
   const standing = useApp((s) => s.standing());
   const streak = useApp((s) => s.streak);
@@ -151,7 +159,10 @@ export function HomeScreen({ onStartSession }: { onStartSession: () => void }) {
         {/* §6: the trust cap, kept visible rather than mentioned once at onboarding. */}
         {standing.trustCapped && (
           <View style={{ marginTop: space.sm }}>
-            <Notice tone="caution">
+            <Notice
+              tone="caution"
+              action={{ label: 'Verify a session', onPress: onCheckIn }}
+            >
               {`Your score is worth ${standing.uncappedTier}. Self-reported profiles show as ${standing.tier} until one session is verified.`}
             </Notice>
           </View>
@@ -224,6 +235,15 @@ export function HomeScreen({ onStartSession }: { onStartSession: () => void }) {
 
         <View style={{ height: space.xl }} />
         <Button label="Start session" onPress={onStartSession} />
+        <View style={{ height: space.xs }} />
+        <Button
+          label="Scan into a venue"
+          variant="secondary"
+          onPress={onCheckIn}
+          accessibilityLabel="Scan into a partner venue to verify this session"
+        />
+        <View style={{ height: space.xs }} />
+        <Button label="Settings and safety" variant="ghost" onPress={onOpenSettings} />
 
         <View style={{ height: space.lg }} />
         <Text style={[type.small, { color: palette.muted }]}>

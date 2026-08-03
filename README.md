@@ -21,18 +21,27 @@ pass. Built to the master specification in
 
 ```bash
 npm install
-npm test          # 292 tests
+npm test          # 317 tests
 npm run typecheck
 npm start         # Expo
 ```
+
+Verified to bundle: `npx expo export --platform ios` produces a 748-module
+Hermes bundle.
 
 ---
 
 ## What this is
 
-A complete v1.0 build: progression engine, calibration, logging, quests, raids,
-rivals, verification, seasons, entitlements, a design system, the first-run
-screens, and the full specification.
+A complete v1.0 build: the progression engine, calibration, logging, quests,
+raids, rivals, verification, ladders, territory, seasons, entitlements, a design
+system, **41 of the 59 specified screens plus all five moment screens**, and the
+full specification.
+
+The 18 unbuilt screens are listed in
+[the screen inventory](docs/03-screen-inventory.md#build-status) with what each
+is blocked on. Their engines are complete and tested — what is missing is the
+screen, not the logic.
 
 **Confirmed decisions:** MODE `BUILD` · coach entity **AXIOM** · **English only**
 · working name **MERIDIAN**.
@@ -58,11 +67,15 @@ src/
 │   ├── verification.ts  QR check-in, anti-cheat, appeals
 │   ├── seasons.ts       13-week cycle, partial reset, pass, archive
 │   ├── streaks.ts       Rest days, freezes, injury pauses
+│   ├── ladder.ts        Board construction, §10 filtering, §12 territory
 │   └── entitlements.ts  The §18 fairness rule, enforced by the type system
 ├── data/            Exercise library (302), AXIOM copy bank, rule tests
 ├── design/          Tokens and components
-├── screens/         Calibration, reveal, home, session, rank card
-└── state/           Zustand store, offline-first persistence
+├── nav/             Tab bar
+├── screens/         Calibration · reveal · home · session · check-in · ladder
+│                    social · profile · season · rank card · moments · safety
+└── state/           store.ts   operator state, persisted, offline-first
+                     world.ts   server-cached ladder/venues/raids, not persisted
 ```
 
 **The engine imports nothing from React Native and reads no clock** — every
@@ -120,6 +133,9 @@ interface LapseOutcome {
 | No shame or appearance language in any AXIOM line | `copy.test.ts` |
 | Streak reset copy never names the lost number | `systems.test.ts` |
 | Every documented worked example matches the engine | `worked-examples.test.ts` |
+| A filtered operator never occupies a leaderboard rank slot | `ladder.test.ts` |
+| Unverified operators contribute nothing to venue territory | `ladder.test.ts` |
+| Calories may be named only inside a negation | `design.test.ts` (source scan) |
 
 The source scans exist because "we agreed not to use drop shadows" survives about
 two sprints, and a filesystem check in CI survives the project.

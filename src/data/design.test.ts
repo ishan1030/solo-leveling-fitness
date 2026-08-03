@@ -209,17 +209,49 @@ describe('§20 — accessibility rules', () => {
 });
 
 describe('§21 — the safety rules hold across the whole source tree', () => {
-  it('tracks no calorie, weight or body-composition data', () => {
-    // §21: "NO calorie, weight, body-fat, or body-composition tracking, targets,
-    // or commentary anywhere in the product."
-    //
-    // Bodyweight is permitted and necessary — it is a scoring input for
-    // bodyweight movements and load ratios — but it is never a target, never
-    // graphed, and never commented on. What must not exist is any notion of
-    // calories, body fat, or a weight goal.
-    const banned = /\b(calorieGoal|calories|kcal|bodyFatP|body_fat|bodyFat|weightGoal|targetWeight|weightTarget|bmi|BMI)\b/;
+  /**
+   * §21: "NO calorie, weight, body-fat, or body-composition tracking, targets,
+   * or commentary anywhere in the product."
+   *
+   * The rule forbids *doing* these things. It does not forbid telling the user
+   * you don't — "No calories. No weight targets." is a product claim and one of
+   * the strongest ones this app makes. So the scan splits in two:
+   *
+   *   1. IDENTIFIERS — a field or variable named `bodyFat` or `weightGoal` means
+   *      the data exists somewhere. Always forbidden, no exceptions.
+   *   2. PROSE — the concept may only appear inside a negation. A sentence
+   *      promising the app does not track calories passes; one that offers to is
+   *      a violation.
+   *
+   * Bodyweight itself is permitted and necessary — it is a scoring input for
+   * bodyweight movements and the 6x load ratio — but never a target, never
+   * graphed, never commented on.
+   */
+  it('declares no calorie, body-composition or weight-goal identifier', () => {
+    const bannedIdentifiers =
+      /\b(calorieGoal|calorieCount|caloriesBurned|kcal|bodyFat|bodyFatPercentage|body_fat|bodyComposition|weightGoal|goalWeight|targetWeight|weightTarget|bmi|BMI)\b/;
+
     for (const file of ALL_SOURCES_CODE_ONLY) {
-      expect(file.content, `${file.path}`).not.toMatch(banned);
+      expect(file.content, `${file.path}`).not.toMatch(bannedIdentifiers);
+    }
+  });
+
+  it('mentions calories or body composition only to promise it does not track them', () => {
+    // Concepts that may appear in prose, but only when negated.
+    const concept = /\b(calorie|calories|body[ -]?fat|body[ -]?composition|weight (?:goal|target)s?)\b/gi;
+    const negation =
+      /\b(no|not|never|without|don'?t|doesn'?t|do not|does not|nothing|forbid|forbids|forbidden|neither|nor|free of)\b/i;
+
+    for (const file of ALL_SOURCES_CODE_ONLY) {
+      for (const match of file.content.matchAll(concept)) {
+        const start = Math.max(0, (match.index ?? 0) - 60);
+        const preceding = file.content.slice(start, match.index ?? 0);
+
+        expect(
+          negation.test(preceding),
+          `${file.path}: "${match[0]}" appears without a negation nearby — §21 permits saying the product does not track this, not offering to`,
+        ).toBe(true);
+      }
     }
   });
 
