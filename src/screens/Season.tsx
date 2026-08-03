@@ -26,7 +26,7 @@ import {
   type Capability,
 } from '../engine/entitlements';
 import { STATIC_COPY } from '../data/copy';
-import { useApp } from '../state/store';
+import { useApp, useStanding } from '../state/store';
 import { useWorld } from '../state/world';
 
 /**
@@ -86,7 +86,7 @@ export function SeasonScreen() {
 
 function SeasonTab() {
   const season = useWorld((s) => s.season);
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
   const profile = useApp((s) => s.profile);
 
   const daysLeft = daysRemainingInSeason(season, new Date());
@@ -492,7 +492,7 @@ function humanise(capability: string): string {
 
 /** §19 moment screen 5 — SEASON CLOSE. */
 export function SeasonCloseScreen({ onDone }: { onDone: () => void }) {
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
   const season = useWorld((s) => s.season);
   if (!standing) return null;
 

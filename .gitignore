@@ -18,3 +18,6 @@ yarn-error.*
 ios/
 android/
 coverage/
+.webpreview/
+.shots/
+.shoot.js

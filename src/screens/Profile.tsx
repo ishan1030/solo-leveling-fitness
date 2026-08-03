@@ -19,7 +19,7 @@ import { formatRivalryRecord } from '../engine/rivals';
 import { PILLARS, isVerified } from '../engine/types';
 import { VERIFICATION_VALIDITY_DAYS } from '../engine/verification';
 import { STATIC_COPY } from '../data/copy';
-import { useApp } from '../state/store';
+import { useApp, useStanding } from '../state/store';
 import { useWorld } from '../state/world';
 
 /**
@@ -41,7 +41,7 @@ export function ProfileScreen({
   onShowRecords: () => void;
 }) {
   const profile = useApp((s) => s.profile);
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
   const streak = useApp((s) => s.streak);
   const sessions = useApp((s) => s.sessions);
 

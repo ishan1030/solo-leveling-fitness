@@ -12,7 +12,7 @@ import {
 import { palette, space, surface, type } from '../design/tokens';
 import { buildLadder, buildVenueStandings, type LadderEntry } from '../engine/ladder';
 import { VENUE_GEOFENCE_METRES } from '../engine/verification';
-import { useApp } from '../state/store';
+import { useApp, useStanding } from '../state/store';
 import { useWorld } from '../state/world';
 
 /**
@@ -29,7 +29,7 @@ import { useWorld } from '../state/world';
  */
 export function TerritoryScreen({ onDone }: { onDone: () => void }) {
   const profile = useApp((s) => s.profile);
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
   const operators = useWorld((s) => s.operators);
   const venues = useWorld((s) => s.venues);
   const cities = useWorld((s) => s.cities);

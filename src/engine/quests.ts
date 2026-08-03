@@ -160,14 +160,25 @@ function floorForPillar(pillar: Pillar): number {
   return 15;
 }
 
-function objectiveFor(pillar: Pillar, group: MuscleGroup, target: number, unit: Quest['targetUnit']): string {
+function objectiveFor(
+  pillar: Pillar,
+  group: MuscleGroup,
+  target: number,
+  unit: Quest['targetUnit'],
+  kind: QuestKind,
+): string {
+  const weekly = kind === 'WEEKLY';
   switch (unit) {
     case 'metres':
       return `Cover ${(target / 1000).toFixed(1)} km at any pace you can hold.`;
     case 'seconds':
       return `Accumulate ${Math.round(target / 60)} minutes of ${group} mobility work.`;
     case 'sessions':
-      return `Log ${target} ${target === 1 ? 'session' : 'sessions'} this week.`;
+      // A daily quest that says "this week" is the kind of copy bug that only
+      // shows up once the board is on screen under a TODAY heading.
+      return weekly
+        ? `Log ${target} ${target === 1 ? 'session' : 'sessions'} this week.`
+        : `Train today. One session, whatever you have in you.`;
     case 'kg_volume':
       return `Move ${target} kg of total volume.`;
     case 'reps':
@@ -214,7 +225,7 @@ export function generateDailyQuests(ctx: QuestGenerationContext): DailyQuestSet 
       id: `q_${ctx.operatorId}_${kind.toLowerCase()}_${index}_${expiresAt.slice(0, 10)}`,
       kind,
       title: TITLES[pillar],
-      objective: objectiveFor(pillar, group, target, unit),
+      objective: objectiveFor(pillar, group, target, unit, kind),
       pillar,
       muscleGroup: group,
       target,
@@ -249,7 +260,7 @@ export function generateWeeklyQuest(ctx: QuestGenerationContext): Quest | null {
     id: `q_${ctx.operatorId}_weekly_${ctx.now.toISOString().slice(0, 10)}`,
     kind: 'WEEKLY',
     title: `WEEKLY ${TITLES[pillar]}`,
-    objective: objectiveFor(pillar, 'full_body', target, unit),
+    objective: objectiveFor(pillar, 'full_body', target, unit, 'WEEKLY'),
     pillar,
     muscleGroup: 'full_body',
     target,

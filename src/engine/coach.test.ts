@@ -243,10 +243,24 @@ describe('§14 — recovery signals', () => {
     expect(signal.guidance).toMatch(/lighter/i);
   });
 
-  it('reports DETRAINED for an operator who has never logged', () => {
+  it('reports NEW, not DETRAINED, for an operator who has never logged', () => {
+    // Telling someone on their very first day that "it has been a while" is
+    // wrong, and it is exactly what the app did before this case was split out.
     const signal = assessRecovery([], now);
-    expect(signal.state).toBe('DETRAINED');
+    expect(signal.state).toBe('NEW');
     expect(signal.daysSinceLastSession).toBeNull();
+    expect(signal.guidance).toMatch(/first session/i);
+    expect(signal.guidance).not.toMatch(/been a while|left off|back/i);
+  });
+
+  it('prescribes a starting point rather than a returning block on session one', () => {
+    const recommendation = recommend(coachCtx({ sessions: [] }));
+    expect(recommendation.recovery.state).toBe('NEW');
+    expect(recommendation.progression.variable).toBe('none');
+    if (recommendation.progression.variable === 'none') {
+      expect(recommendation.progression.reason).toBe('hold');
+    }
+    expect(describeProgression(recommendation.progression)).toMatch(/starting point/i);
   });
 
   it('never advises pushing through an overreached week', () => {

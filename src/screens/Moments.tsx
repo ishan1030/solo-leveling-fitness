@@ -11,7 +11,7 @@ import {
 import { motion, palette, space, tierVisuals, type } from '../design/tokens';
 import type { Tier } from '../engine/types';
 import { lineFor } from '../data/copy';
-import { useApp } from '../state/store';
+import { useApp, useStanding } from '../state/store';
 
 /**
  * §19 moment screens 2 and 3, specified frame by frame in
@@ -53,7 +53,7 @@ export function TierUpScreen({
   onDone: () => void;
 }) {
   const personality = useApp((s) => s.coachPersonality);
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
   const reducedMotion = useReducedMotion();
 
   const [stage, setStage] = useState<TierUpStage>(reducedMotion ? 'complete' : 'rest');

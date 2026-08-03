@@ -12,7 +12,7 @@ import {
 import { palette, space, surface, type } from '../design/tokens';
 import { trialForWeek } from '../engine/quests';
 import { isVerified } from '../engine/types';
-import { useApp } from '../state/store';
+import { useApp, useStanding } from '../state/store';
 import { useWorld } from '../state/world';
 
 /**
@@ -27,7 +27,7 @@ export function TrialsScreen({ onDone }: { onDone: () => void }) {
   const operators = useWorld((s) => s.operators);
   const season = useWorld((s) => s.season);
   const profile = useApp((s) => s.profile);
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
 
   const weekIndex = useMemo(
     () =>

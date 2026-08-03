@@ -435,6 +435,18 @@ describe('§8 — quest generation rules', () => {
     expect(weekly!.target).toBeGreaterThan(daily.primary!.target);
   });
 
+  it('never tells a daily quest to span a week', () => {
+    // The consistency pillar is the only one measured in sessions, so it is the
+    // only place a daily quest could inherit weekly phrasing.
+    const set = generateDailyQuests(questCtx({ pillars: pillars(90, 90, 20, 90) }));
+    expect(set.primary!.pillar).toBe('consistency');
+    expect(set.primary!.objective).not.toMatch(/this week/i);
+    expect(set.primary!.objective).toMatch(/today/i);
+
+    const weekly = generateWeeklyQuest(questCtx({ pillars: pillars(90, 90, 20, 90) }));
+    expect(weekly!.objective).toMatch(/this week/i);
+  });
+
   it('writes a real objective for every quest — no placeholders', () => {
     const set = generateDailyQuests(questCtx());
     for (const quest of [set.primary!, ...set.optional]) {

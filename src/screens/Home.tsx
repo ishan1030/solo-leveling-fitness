@@ -19,7 +19,7 @@ import { requiresMedicalStop } from '../engine/types';
 import { describeProgression } from '../engine/coach';
 import { STATIC_COPY } from '../data/copy';
 import { useRecommendation } from './Coach';
-import { useApp } from '../state/store';
+import { useApp, useStanding } from '../state/store';
 
 /**
  * The returning-operator home screen.
@@ -42,7 +42,7 @@ export function HomeScreen({
 }) {
   const recommendation = useRecommendation();
   const profile = useApp((s) => s.profile);
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
   const streak = useApp((s) => s.streak);
   const resume = useApp((s) => s.resume);
 

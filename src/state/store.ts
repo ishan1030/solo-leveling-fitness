@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import {
@@ -514,5 +515,23 @@ export const useApp = create<AppState>()(
     },
   ),
 );
+
+/**
+ * The standing selector, memoised.
+ *
+ * `standing()` derives a fresh object on every call. Passing it directly to
+ * `useApp` — `useApp((s) => s.standing())` — makes zustand compare a new object
+ * reference against the previous one on every store read, conclude the slice
+ * changed, and re-render forever. It surfaces as React error #185, and it took
+ * running the built app to notice: the engine tests never mount a component and
+ * the reveal screen happens to select only stable slices.
+ *
+ * Selecting `profile` and deriving downstream fixes it, because `profile` is a
+ * stable reference until the profile actually changes.
+ */
+export function useStanding(): Standing | null {
+  const profile = useApp((s) => s.profile);
+  return useMemo(() => (profile ? computeStanding(profile) : null), [profile]);
+}
 
 export { RECALIBRATION_INTERVAL_DAYS };

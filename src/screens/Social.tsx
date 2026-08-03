@@ -30,7 +30,7 @@ import {
 } from '../engine/raids';
 import { PILLARS, type Pillar } from '../engine/types';
 import { lineFor } from '../data/copy';
-import { useApp } from '../state/store';
+import { useApp, useStanding } from '../state/store';
 import { useWorld } from '../state/world';
 
 /**
@@ -44,7 +44,7 @@ import { useWorld } from '../state/world';
 
 export function SocialScreen() {
   const profile = useApp((s) => s.profile);
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
   const personality = useApp((s) => s.coachPersonality);
 
   const candidates = useWorld((s) => s.rivalCandidates);
@@ -481,7 +481,7 @@ function RaidPanel({
 
 /** §19 moment screen 4 — RAID COMPLETE. Sigils resolving together on an arc. */
 export function RaidCompleteScreen({ onDone }: { onDone: () => void }) {
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
   if (!standing) return null;
 
   return (

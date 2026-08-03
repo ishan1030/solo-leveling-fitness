@@ -5,7 +5,7 @@ import * as Sharing from 'expo-sharing';
 import { Button, Panel, Screen, SectionLabel, TierSigil } from '../design/components';
 import { palette, space, surface, tierVisuals, type } from '../design/tokens';
 import { PILLARS, type OperatorProfile, type Standing } from '../engine/types';
-import { useApp } from '../state/store';
+import { useApp, useStanding } from '../state/store';
 
 /**
  * §13 — RANK CARD & SHARE LOOP. "The product's most-seen artifact."
@@ -198,7 +198,7 @@ function ScanCode({ value, size = 72 }: { value: string; size?: number }) {
 
 export function RankCardScreen({ onDone }: { onDone: () => void }) {
   const profile = useApp((s) => s.profile);
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
   const cardRef = useRef<View>(null);
 
   if (!profile || !standing) return null;

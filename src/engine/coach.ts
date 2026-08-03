@@ -62,6 +62,8 @@ export interface ProgressionContext {
   conservative: boolean;
   /** True when returning from an injury or illness pause. */
   returning: boolean;
+  /** True when the operator has never logged a session. */
+  isFirstSession?: boolean;
 }
 
 /**
@@ -79,6 +81,17 @@ export function nextProgressionStep(ctx: ProgressionContext): ProgressionStep {
       variable: 'none',
       reason: 'deload',
       loadKg: round1(ctx.currentLoadKg * DELOAD_LOAD_FACTOR),
+      reps: ctx.currentReps,
+    };
+  }
+
+  // A first session has nothing to progress from, so it prescribes the starting
+  // load rather than a step.
+  if (ctx.isFirstSession) {
+    return {
+      variable: 'none',
+      reason: 'hold',
+      loadKg: ctx.currentLoadKg,
       reps: ctx.currentReps,
     };
   }
@@ -140,7 +153,13 @@ export function stepIncreaseRatio(step: ProgressionStep): number {
 // §14 — Recovery signals
 // ---------------------------------------------------------------------------
 
-export type RecoveryState = 'FRESH' | 'STEADY' | 'ACCUMULATING' | 'OVERREACHING' | 'DETRAINED';
+export type RecoveryState =
+  | 'NEW'
+  | 'FRESH'
+  | 'STEADY'
+  | 'ACCUMULATING'
+  | 'OVERREACHING'
+  | 'DETRAINED';
 
 export interface RecoverySignal {
   state: RecoveryState;
@@ -174,7 +193,20 @@ export function assessRecovery(
     ? wholeDaysBetween(parseIsoDate(lastSession.startedAt.slice(0, 10)), now)
     : null;
 
-  if (daysSince === null || daysSince > 14) {
+  // An operator who has never logged a session is not "returning" from
+  // anything. Telling someone on their first day that it has been a while is
+  // the kind of thing that only shows up when you actually run the app.
+  if (daysSince === null) {
+    return {
+      state: 'NEW',
+      recentSessionCount: 0,
+      daysSinceLastSession: null,
+      guidance:
+        'First session. Start lighter than you think you need to — the point of week one is to find out what your baseline actually is, not to prove anything.',
+    };
+  }
+
+  if (daysSince > 14) {
     return {
       state: 'DETRAINED',
       recentSessionCount: recent.length,
@@ -281,6 +313,7 @@ const PILLAR_FOCUS: Record<Pillar, MuscleGroup[]> = {
  */
 const MOTIVATIONAL_LINES: Record<CoachPersonality, Record<RecoveryState, string>> = {
   CALM_MENTOR: {
+    NEW: 'Everyone starts somewhere, and the first number is just a measurement.',
     FRESH: 'You are rested. Use it, but do not spend it all in the first set.',
     STEADY: 'Consistent work, consistently done. That is most of it.',
     ACCUMULATING: 'You have put in a lot this week. Holding steady is progress too.',
@@ -288,6 +321,7 @@ const MOTIVATIONAL_LINES: Record<CoachPersonality, Record<RecoveryState, string>
     DETRAINED: 'Starting again is the same skill as starting the first time. You already have it.',
   },
   STRICT_TRAINER: {
+    NEW: 'First session. Log it honestly and the rest of this works.',
     FRESH: 'No excuses available today. You are rested and the plan is written.',
     STEADY: 'Same again. The work compounds whether you feel it this week or not.',
     ACCUMULATING: 'Hold the load. Adding to a fatigued week is how good blocks get wasted.',
@@ -295,6 +329,7 @@ const MOTIVATIONAL_LINES: Record<CoachPersonality, Record<RecoveryState, string>
     DETRAINED: 'Start lighter than your ego wants. Earn the old numbers back.',
   },
   ELITE_COMMANDER: {
+    NEW: 'First deployment, Operator. The ladder starts here.',
     FRESH: 'Fully recovered, Operator. The ladder is waiting.',
     STEADY: 'Rhythm established. Maintain it.',
     ACCUMULATING: 'Heavy week logged. Hold the line rather than pushing it.',
@@ -362,6 +397,7 @@ export function recommend(ctx: CoachContext): Recommendation {
     weekIndex: ctx.weekIndex,
     conservative,
     returning: recovery.state === 'DETRAINED',
+    isFirstSession: recovery.state === 'NEW',
   });
 
   return {
@@ -387,7 +423,7 @@ export function describeProgression(step: ProgressionStep): string {
         return `Deload week. ${step.loadKg} kg for ${step.reps} reps — lighter on purpose, and part of the programme.`;
       if (step.reason === 'returning')
         return `Returning block. ${step.loadKg} kg for ${step.reps} reps. Earn the old numbers back.`;
-      return 'Nothing scheduled.';
+      return `Starting point: ${step.loadKg} kg for ${step.reps} reps. Adjust it to what you can actually hold.`;
     default:
       return assertNeverStep(step);
   }

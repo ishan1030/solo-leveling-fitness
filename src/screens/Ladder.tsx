@@ -19,7 +19,7 @@ import {
   type LadderScope,
 } from '../engine/ladder';
 import { isVerified } from '../engine/types';
-import { useApp } from '../state/store';
+import { useApp, useStanding } from '../state/store';
 import { useWorld } from '../state/world';
 
 /**
@@ -43,7 +43,7 @@ export function LadderScreen({
   onShowTrials: () => void;
 }) {
   const profile = useApp((s) => s.profile);
-  const standing = useApp((s) => s.standing());
+  const standing = useStanding();
   const operators = useWorld((s) => s.operators);
   const venues = useWorld((s) => s.venues);
   const cities = useWorld((s) => s.cities);
