@@ -18,7 +18,10 @@ function sourceFiles(dir: string, acc: string[] = []): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) sourceFiles(full, acc);
-    else if (/\.tsx?$/.test(entry.name) && !entry.name.endsWith('.test.ts')) acc.push(full);
+    // Test files are excluded: a prohibition regex naming the banned terms is
+    // how the rule is enforced, not a violation of it. Both .test.ts and
+    // .test.tsx — the render tests live in the latter.
+    else if (/\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)) acc.push(full);
   }
   return acc;
 }

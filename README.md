@@ -26,8 +26,12 @@ npm run typecheck
 npm start         # Expo
 ```
 
-Verified to bundle: `npx expo export --platform ios` produces a 748-module
+Verified to bundle: `npx expo export --platform ios` produces a 757-module
 Hermes bundle.
+
+Tests run as two projects. `npm test -- --project engine` runs the pure
+TypeScript engine in Node; `--project render` mounts every screen in jsdom
+against react-native-web.
 
 ---
 
@@ -78,8 +82,9 @@ src/
 ├── screens/         Calibration · reveal · home · session · check-in · ladder
 │                    social · profile · season · rank card · records ·
 │                    coach · territory · trials · moments · safety
-└── state/           store.ts   operator state, persisted, offline-first
-                     world.ts   server-cached ladder/venues/raids, not persisted
+├── state/           store.ts   operator state, persisted, offline-first
+│                    world.ts   server-cached ladder/venues/raids, not persisted
+└── test/            jsdom setup and store seeding for the render project
 ```
 
 **The engine imports nothing from React Native and reads no clock** — every
@@ -150,8 +155,20 @@ interface LapseOutcome {
 | One power user cannot carry a guild roster | `guilds.test.ts` |
 | Past the cap, only recruiting raises a guild's contribution | `guilds.test.ts` |
 
+| **Every screen mounts and renders content** | `screens.render.test.tsx` |
+| Home does not enter an infinite render loop | `screens.render.test.tsx` |
+| The trust cap is named on screen, not just computed | `screens.render.test.tsx` |
+| A paused operator sees no challenge prompt anywhere | `screens.render.test.tsx` |
+| The medical-stop state suppresses quests and AXIOM | `screens.render.test.tsx` |
+
 The source scans exist because "we agreed not to use drop shadows" survives about
 two sprints, and a filesystem check in CI survives the project.
+
+The render project exists for a sharper reason: 426 engine tests were green
+while the app showed a white screen after the reveal. A selector returning a
+fresh object on every call sent nine screens into an infinite render loop, and
+nothing that never mounts a component can see that. Reintroducing the bug now
+fails six tests.
 
 ---
 
